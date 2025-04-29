@@ -1,0 +1,15 @@
+services:
+  xfce-vnc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ubuntu-xfce-vnc-container_name
+    ports:
+      - "5901:5901" # VNC port
+      - "6080:6080" # novnc
+    volumes:
+      - ./scripts/startup.sh:/startup.sh
+    environment:
+      VNC_PW: "password" # Set a password for VNC access
+    stdin_open: true
+    tty: true
