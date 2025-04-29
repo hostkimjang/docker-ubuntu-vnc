@@ -1,6 +1,6 @@
-FROM ubuntu:22.04
-ENV DEBIAN_FRONTEND=noninteractive
+FROM ubuntu:24.04
 
+#ENV DEBIAN_FRONTEND=noninteractive
 RUN mkdir -p /run/dbus
 
 # 기본 패키지 설치 + dbus 추가
@@ -8,7 +8,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xfce4 xfce4-terminal \
     tigervnc-standalone-server tigervnc-common tigervnc-tools \
     wget git python3 python3-numpy curl ca-certificates \
-    dbus dbus-x11 x11-xserver-utils gnupg lsb-release fonts-nanum locales \
+    dbus dbus-x11 x11-xserver-utils gnupg lsb-release fonts-nanum locales \ 
+    net-tools \    
+    iputils-ping iproute2 procps \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 한글 로케일 설정
@@ -40,6 +42,16 @@ ENV NOVNC_DIR=/opt/novnc
 ENV WEBSOCKIFY_DIR=/opt/novnc/utils/websockify
 RUN git clone --depth 1 https://github.com/novnc/noVNC.git $NOVNC_DIR && \
     git clone --depth 1 https://github.com/novnc/websockify.git $WEBSOCKIFY_DIR
+
+# cloudflare warp 설치 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl gnupg apt-transport-https
+# GPG 키 추가
+RUN curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | gpg --dearmor -o /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+# 저장소 추가
+RUN echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/cloudflare-client.list
+# warp 설치
+RUN apt-get update && apt-get install -y cloudflare-warp
 
 # 스타트업 스크립트 복사
 COPY scripts/startup.sh /startup.sh

@@ -8,8 +8,15 @@ services:
       - "5901:5901" # VNC port
       - "6080:6080" # novnc
     volumes:
+      - ./scripts/cloudflare_setup.sh:/cloudflare_setup.sh
       - ./scripts/startup.sh:/startup.sh
     environment:
       VNC_PW: "password" # Set a password for VNC access
+
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun
     stdin_open: true
     tty: true

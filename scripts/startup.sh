@@ -1,9 +1,10 @@
 #!/bin/bash
 set -e
 
+./cloudflare_setup.sh
+
 # dbus 서비스 시작 (백그라운드)
 dbus-daemon --system --fork
-
 unset DBUS_SESSION_BUS_ADDRESS
 
 # VNC 비밀번호 설정
