@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dos2unix \
     net-tools \    
     iputils-ping iproute2 procps \
+    software-properties-common \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m venv /venv
@@ -37,8 +38,10 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && \
     apt-get install -y google-chrome-stable; \
-    else \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+    add-apt-repository -y ppa:xtradeb/apps && \
     apt-get update && \
+    apt-get install -y ungoogled-chromium; \
     apt-get install -y chromium-browser; \
     fi
 
