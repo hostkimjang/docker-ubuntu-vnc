@@ -7,11 +7,16 @@ RUN mkdir -p /run/dbus
 RUN apt-get update && apt-get install -y --no-install-recommends \
     xfce4 xfce4-terminal \
     tigervnc-standalone-server tigervnc-common tigervnc-tools \
-    wget git python3 python3-numpy curl ca-certificates \
+    wget git python3 python3-numpy python3-pip python3-venv curl ca-certificates \
     dbus dbus-x11 x11-xserver-utils gnupg lsb-release fonts-nanum locales \ 
+    dos2unix \
     net-tools \    
     iputils-ping iproute2 procps \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /venv
+ENV PATH="/venv/bin:$PATH"
+
 
 # 한글 로케일 설정
 RUN sed -i '/^# *ko_KR.UTF-8 UTF-8/s/^# *//' /etc/locale.gen && \
@@ -60,4 +65,4 @@ RUN chmod +x /startup.sh
 EXPOSE 5901 6080
 
 # 기본 실행
-CMD ["/startup.sh"]
+CMD ["bash", "/startup.sh"]
