@@ -2,8 +2,10 @@ import asyncio
 import json
 import random
 import time
+from asyncio import wait_for
 from time import sleep
 import lxml
+import platform
 from bs4 import BeautifulSoup
 import chardet
 import pandas as pd
@@ -16,9 +18,6 @@ import os
 
 if not os.path.exists("screenshots"):
     os.makedirs("screenshots")
-    
-if not os.path.exists("web_data"):
-    os.makedirs("web_data")
 
 def store_first_db():
 
@@ -68,7 +67,7 @@ def load_10_restaurant_names_and_addresses():
     conn = sqlite3.connect('food_data.db')
     cursor = conn.cursor()
 
-    cursor.execute("SELECT 사업장명, 도로명전체주소 FROM restaurants limit 100;")
+    cursor.execute("SELECT 사업장명, 도로명전체주소 FROM restaurants ;")
     rows = cursor.fetchall()
 
     conn.close()
@@ -175,12 +174,28 @@ async def crawler():
     if not os.path.exists("screenshots"):
         os.makedirs("screenshots")
 
+    system = platform.platform()
+    arch = platform.machine()
+    executable = None
+
+    print("시스템 정보 확인")
+    print(f"시스템: {system}")
+    print(f"아키텍처: {arch}")
+
+    if system != "mac" and arch in ("aarch64", "arm64"):
+        print("ARM64 환경 감지")
+        if os.path.exists("/usr/bin/ungoogled-chromium"):
+            executable = "/usr/bin/ungoogled-chromium"
+        elif os.path.exists("/usr/bin/chromium"):
+            executable = "/usr/bin/chromium"
+
     try:
         print("🚀 Zendriver 시작 중...")
-        browser = await zd.start(headless=False, verbose=True)
+        print(f" 브라우저 실행 위치. {executable}")
+        browser = await zd.start(
+            browser_executable_path=executable,
+        )
         print("✅ Zendriver 시작 완료. 브라우저 객체 확보.")
-        page = await browser.get("https://map.naver.com/")
-        print("🌐 페이지 로딩 중...")
 
         results = []
 
@@ -188,42 +203,52 @@ async def crawler():
             search_query = make_search_query(business_name, road_address)
             encoded_query = urllib.parse.quote(search_query) # URL 인코딩
             search_url = f"https://map.naver.com/p/search/{encoded_query}"
+            mob_search_url = f"https://m.place.naver.com/restaurant/list?query={encoded_query}&x=126&y=37"
 
             print(f"\n--- {index+1}/{len(restaurant_infos)} 처리 중: {search_query} ---")
             print(f"🔗 URL: {search_url}")
 
             try:
                 # 1. browser.get()으로 이동하고, 반환된 page/tab 객체를 사용
-                page = await browser.get(search_url)
+                page = await browser.get(mob_search_url)
                 print("🌐 페이지 이동 완료. 콘텐츠 로딩 대기 중...") # browser.get이 완료될 때까지 기다린다고 가정
-                await page.wait(t=3)  # 페이지 로딩 대기
 
+                await page.wait(t=3)  # 페이지 로딩 대기
                 # --- 이제 'page' (Tab 객체)를 사용하여 요소 찾기 ---
-                search_iframe_selector = "#searchIframe"
+                place_business_list_wrapper = "div.place_business_list_wrapper"
                 entry_iframe_selector = "#entryIframe"
 
-                pprint.pprint("🔄 searchIframe 로딩 대기중...")
-                await page.wait_for(search_iframe_selector, timeout=10000)
-                pprint.pprint("✅ searchIframe 로딩 완료.")
+                pprint.pprint("🔄 place_business_list_wrapper 로딩 대기중...")
+                await page.wait_for(place_business_list_wrapper, timeout=10000)
+                pprint.pprint("✅ place_business_list_wrapper 로딩 완료.")
 
-                # tmp_content = await page.get_content()
-                pprint.pprint('SearchIframe url 확인중')
-                iframe_elements_str_list = await page.select_all("#searchIframe")
-                iframe_string = str(iframe_elements_str_list[0])
-                match = re.search(r'src="([^"]*)"', iframe_string)
-                pprint.pprint(f"iframe URL: {match.group(1)}")
-
-                page2 = await page.get(match.group(1), new_tab=True)
-                tmp_content = await page2.get_content()
+                tmp_content = await page.get_content()
                 tmp_parse = BeautifulSoup(tmp_content, "lxml")
+                a_tags = tmp_parse.select("div.place_business_list_wrapper > ul > li a[href]")
+                href_list = [a['href'] for a in a_tags]
+                valid_links = [
+                    re.match(r"^/restaurant/\d+", href).group(0)
+                    for href in href_list
+                    if re.match(r"^/restaurant/\d+", href)
+                ]
 
-                if tmp_parse.select("div[class='FYvSc']"):
-                    pprint.pprint("❌ 검색 결과 없음.")
-                    await page.save_screenshot(f"screenshots/no_store_{index + 1}_{business_name}_{road_address}.png")
-                    await page2.close()
-                    continue
+                unique_links = list(set(valid_links))
 
-                await page2.close()
+                print(f"🍽️ 유효한 링크 개수: {len(unique_links)}")
+                print(f"🍽️ 샘플 링크: {unique_links[:3]}")
+
+                # page2 = await page.get(match.group(1), new_tab=True)
+                # tmp_content = await page2.get_content()
+                # tmp_parse = BeautifulSoup(tmp_content, "lxml")
+                #
+                # if tmp_parse.select("div[class='FYvSc']"):
+                #     pprint.pprint("❌ 검색 결과 없음.")
+                #     await page.save_screenshot(f"screenshots/no_store_{index + 1}_{business_name}_{road_address}.png")
+                #     await page2.close()
+                #     continue
+                #
+                #await page2.close()
+                await page.get(f"https://m.place.naver.com{unique_links[0]}")
                 pprint.pprint("🔄 entryIframe 로딩 대기중...")
                 # await page.wait_for(search_iframe_selector, timeout=10000)
                 await page.wait_for(entry_iframe_selector, timeout=10)
