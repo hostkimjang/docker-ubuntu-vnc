@@ -24,3 +24,7 @@ services:
       - /dev/net/tun
     tty: true
     stdin_open: true
+
+networks:
+  shared_network:
+    external: true
