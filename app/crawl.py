@@ -17,41 +17,6 @@ import re
 import os
 import sys
 
-if not os.path.exists("screenshots"):
-    os.makedirs("screenshots")
-
-if not os.path.exists("web_data"):
-    os.makedirs("web_data")
-    
-if not os.path.exists("error_logs"):
-    os.makedirs("error_logs")
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SCREENSHOT_DIR = os.path.join(BASE_DIR, "screenshots")
-DATA_DIR = os.path.join(BASE_DIR, "web_data")
-ERROR_DIR = os.path.join(BASE_DIR, "error_logs")
-
-os.makedirs(SCREENSHOT_DIR, exist_ok=True)
-os.makedirs(DATA_DIR, exist_ok=True)
-os.makedirs(ERROR_DIR, exist_ok=True)
-
-print("📂 Screenshot 저장 경로:", SCREENSHOT_DIR)
-print("📂 WebData 저장 경로:", DATA_DIR)
-print("📂 ErrorLog 저장 경로:", ERROR_DIR)
-
-start_index = int(os.environ.get("START_INDEX", sys.argv[1] if len(sys.argv) > 1 else 0))
-output_path = os.path.join(DATA_DIR, f"output_{start_index}.json")
-
-browser_args = [
-    "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage",
-    "--disable-software-rasterizer", "--disable-extensions", "--disable-infobars",
-    "--disable-web-security", "--disable-background-networking",
-    "--disable-background-timer-throttling", "--disable-backgrounding-occluded-windows",
-    "--disable-renderer-backgrounding", "--disable-setuid-sandbox",
-    "--no-first-run", "--no-zygote"
-]
-
-
 def store_first_db():
 
     file_path = 'fulldata_07_24_04_P_일반음식점.csv'
@@ -268,8 +233,6 @@ async def crawler():
         return
 
     print(f"ℹ️ {len(restaurant_infos)}개 가게에 대한 크롤러를 시작합니다...")
-    if not os.path.exists("screenshots"):
-        os.makedirs("screenshots")
 
     system = platform.platform()
     arch = platform.machine()
@@ -413,4 +376,39 @@ async def crawler():
 
 if __name__ == "__main__":
     #store_first_db()
+    if not os.path.exists("screenshots"):
+        os.makedirs("screenshots")
+
+    if not os.path.exists("web_data"):
+        os.makedirs("web_data")
+
+    if not os.path.exists("error_logs"):
+        os.makedirs("error_logs")
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    SCREENSHOT_DIR = os.path.join(BASE_DIR, "screenshots")
+    DATA_DIR = os.path.join(BASE_DIR, "web_data")
+    ERROR_DIR = os.path.join(BASE_DIR, "error_logs")
+
+    os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+    os.makedirs(DATA_DIR, exist_ok=True)
+    os.makedirs(ERROR_DIR, exist_ok=True)
+
+    print("📂 Screenshot 저장 경로:", SCREENSHOT_DIR)
+    print("📂 WebData 저장 경로:", DATA_DIR)
+    print("📂 ErrorLog 저장 경로:", ERROR_DIR)
+
+    start_index = int(os.environ.get("START_INDEX", sys.argv[1] if len(sys.argv) > 1 else 0))
+    output_path = os.path.join(DATA_DIR, f"output_{start_index}.json")
+
+    browser_args = [
+        "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage",
+        "--disable-software-rasterizer", "--disable-extensions", "--disable-infobars",
+        "--disable-web-security", "--disable-background-networking",
+        "--disable-background-timer-throttling", "--disable-backgrounding-occluded-windows",
+        "--disable-renderer-backgrounding", "--disable-setuid-sandbox",
+        "--no-first-run", "--no-zygote"
+    ]
+
+    
     asyncio.run(crawler())

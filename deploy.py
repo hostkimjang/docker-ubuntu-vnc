@@ -3,7 +3,7 @@ import os
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
-CONTAINER_COUNT = 16
+CONTAINER_COUNT = 1
 DB_PATH = "./app/food_data.db"
 
 def get_total_records():

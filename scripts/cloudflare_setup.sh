@@ -49,6 +49,10 @@ warp_register_and_connect() {
         yes | warp-cli --accept-tos connect
         sleep 5
 
+        echo "[$attempt/$max_attempts] connecting to WARP + DOH..."
+        warp-cli --accept-tos mode warp+doh
+        sleep 5
+
         # 연결 확인
         status=$(warp-cli --accept-tos status | grep 'Connected' || true)
         if echo "$status" | grep -q "Connected"; then
@@ -66,10 +70,6 @@ warp_register_and_connect() {
 
 # WARP 등록 및 연결 재시도 포함
 warp_register_and_connect || exit 1
-
-echo "Setting WARP mode..."
-warp-cli --accept-tos mode warp+doh
-sleep 5
 
 # 연결 확인
 echo "Checking connection..."
