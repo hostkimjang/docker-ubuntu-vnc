@@ -185,7 +185,7 @@ def log_error_json(error_info, filepath):
         f.write(json.dumps(error_info, ensure_ascii=False) + "\n")
     print(f"❌ 오류 기록 완료: {error_info['title'] if 'title' in error_info else '알 수 없는 오류'}")
 
-async def with_retry(func, retries=5, delay=1):
+async def with_retry(func, retries=10, delay=1):
     for attempt in range(retries):
         try:
             return await func()
@@ -194,7 +194,7 @@ async def with_retry(func, retries=5, delay=1):
             await asyncio.sleep(delay)
     raise Exception("❌ 모든 재시도 실패")
 
-async def with_browser_retry(browser_ref, executable, browser_args, coro_fn, retries=5, delay=2):
+async def with_browser_retry(browser_ref, executable, browser_args, coro_fn, retries=10, delay=2):
     for attempt in range(retries):
         try:
             result = await coro_fn(browser_ref[0])

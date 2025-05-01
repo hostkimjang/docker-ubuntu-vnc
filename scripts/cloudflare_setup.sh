@@ -38,13 +38,35 @@ nohup /bin/warp-svc > /dev/null 2>&1 &
 echo "Waiting for WARP service to start..."
 sleep 5
 
-# Warp 등록 및 연결
-echo "Registering WARP client..."
-warp-cli --accept-tos registration new
-sleep 5
-echo "Connecting to WARP..."
-yes | warp-cli --accept-tos connect
-sleep 5
+warp_register_and_connect() {
+    max_attempts=5
+    for attempt in $(seq 1 $max_attempts); do
+        echo "[$attempt/$max_attempts] Registering WARP client..."
+        warp-cli --accept-tos registration new
+        sleep 3
+
+        echo "[$attempt/$max_attempts] Connecting to WARP..."
+        yes | warp-cli --accept-tos connect
+        sleep 5
+
+        # 연결 확인
+        status=$(warp-cli --accept-tos status | grep 'Connected' || true)
+        if echo "$status" | grep -q "Connected"; then
+            echo "✅ WARP 연결 성공"
+            return 0
+        fi
+
+        echo "❌ 연결 실패. 재시도 중..."
+        sleep 10
+    done
+
+    echo "❌ 모든 WARP 연결 시도 실패. 종료합니다."
+    return 1
+}
+
+# WARP 등록 및 연결 재시도 포함
+warp_register_and_connect || exit 1
+
 echo "Setting WARP mode..."
 warp-cli --accept-tos mode warp+doh
 sleep 5
