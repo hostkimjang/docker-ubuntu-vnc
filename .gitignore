@@ -1,3 +1,4 @@
 /app/screenshots
 /app/web_data
 .env*
+/app/error_logs
