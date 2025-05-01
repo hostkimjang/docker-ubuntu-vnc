@@ -16,12 +16,13 @@ def get_total_records():
 
 def create_env_file(start, end, vnc_port, novnc_port, index):
     env_content = f"""\
-START_INDEX={start}
-END_INDEX={end}
-VNC_PORT={vnc_port}
-NOVNC_PORT={novnc_port}
-CONTAINER_ID={index}
-"""
+    START_INDEX={start}
+    END_INDEX={end}
+    VNC_PORT={vnc_port}
+    NOVNC_PORT={novnc_port}
+    CONTAINER_ID={index}
+    INDEX={index}
+    """
     env_path = f".env.{index}"
     with open(env_path, "w") as f:
         f.write(env_content)
