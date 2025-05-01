@@ -278,6 +278,11 @@ async def crawler():
 
                     tmp_content = await page.get_content()
                     soup = BeautifulSoup(tmp_content, "lxml")
+                    
+                    if soup.select(("div[class='FYvSc'")):
+                        pprint.pprint("❌ 검색 결과 없음")
+                        await page.save_screenshot(f"screenshots/no_result_{index+1}_{business_name}_{road_address}.png")
+                        continue
 
                     a_tags = soup.select("div.place_business_list_wrapper > ul > li a[href]")
                     href_list = [a['href'] for a in a_tags]

@@ -1,25 +1,23 @@
 services:
-  xfce-vnc:
+  crawler:
     build:
       context: .
+      shm_size: 4gb
       dockerfile: Dockerfile
-    env_file:
-      - .env
-    container_name: ubuntu-xfce-vnc-container_name
-    ports:
-      - "5901:5901" # VNC port
-      - "6080:6080" # novnc
     volumes:
       - ./app:/app
-      - ./scripts/cloudflare_setup.sh:/cloudflare_setup.sh
-      - ./scripts/startup.sh:/startup.sh
-      - ./scripts/run.sh:/run.sh
+      - ./scripts:/scripts
     environment:
-      VNC_PW: "password" # Set a password for VNC access
+      VNC_PW: password
+      START_INDEX: ${START_INDEX}
+      END_INDEX: ${END_INDEX}
+    ports:
+      - "${VNC_PORT}:5901"
+      - "${NOVNC_PORT}:6080"
     cap_add:
       - NET_ADMIN
       - SYS_ADMIN
     devices:
       - /dev/net/tun
-    stdin_open: true
     tty: true
+    stdin_open: true

@@ -1,3 +1,3 @@
-cd app
+cd /app
 pip3 install -r requirment.txt
-python3 crawl.py
+python3 run.py "$START_INDEX" "$END_INDEX"

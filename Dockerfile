@@ -61,9 +61,11 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
 # warp 설치
 RUN apt-get update && apt-get install -y cloudflare-warp
 
-# 스타트업 스크립트 복사
+# 스크립트 복사 및 권한
 COPY scripts/startup.sh /startup.sh
-RUN chmod +x /startup.sh
+COPY scripts/cloudflare_setup.sh /cloudflare_setup.sh
+COPY app/run.py /run.py
+RUN chmod +x /startup.sh /cloudflare_setup.sh /run.py
 
 EXPOSE 5901 6080
 
