@@ -15,6 +15,7 @@ import zendriver as zd
 import urllib
 import re
 import os
+import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SCREENSHOT_DIR = os.path.join(BASE_DIR, "screenshots")
@@ -27,6 +28,7 @@ os.makedirs(ERROR_DIR, exist_ok=True)
 
 print("📂 Screenshot 저장 경로:", SCREENSHOT_DIR)
 print("📂 WebData 저장 경로:", DATA_DIR)
+print("📂 ErrorLog 저장 경로:", ERROR_DIR)
 
 start_index = int(os.environ.get("START_INDEX", sys.argv[1] if len(sys.argv) > 1 else 0))
 output_path = os.path.join(DATA_DIR, f"output_{start_index}.json")
