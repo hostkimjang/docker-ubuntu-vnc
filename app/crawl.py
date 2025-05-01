@@ -17,6 +17,15 @@ import re
 import os
 import sys
 
+if not os.path.exists("screenshots"):
+    os.makedirs("screenshots")
+
+if not os.path.exists("web_data"):
+    os.makedirs("web_data")
+    
+if not os.path.exists("error_logs"):
+    os.makedirs("error_logs")
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SCREENSHOT_DIR = os.path.join(BASE_DIR, "screenshots")
 DATA_DIR = os.path.join(BASE_DIR, "web_data")
